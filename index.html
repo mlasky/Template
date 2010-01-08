@@ -1,0 +1,23 @@
+<html>
+	<head>
+		<title>Template Test</title>
+		<script src="http://www.google.com/jsapi"></script>
+		<script>google.load("jquery", "1");</script>
+		<script src="jtple.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+			$(document).ready(function() {
+				var template = $('body').template();
+				var newTpl = template.getNew('name', {'first_name': 'Frank', 'last_name': 'Zappa'});
+				
+				
+				$(newTpl.domNode).hide().appendTo('body').fadeIn('slow');
+			});
+		</script>
+	</head>
+	<body>
+		<div class="tpl" name="name">
+			<span class="var" name="first_name">Michael</span> 
+			<span class="var" name="last_name">Lasky</span> 
+		</div>
+	</body>
+</html>
