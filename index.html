@@ -1,28 +1,40 @@
 <html>
-    <head>
-        <title>Template Test</title>
-        <script src="http://www.google.com/jsapi"></script>
-        <script>google.load("jquery", "1");</script>
-        <script src="jtple.js" type="text/javascript" charset="utf-8"></script>
-        <script>
-            $(document).ready(function() {
-              var template = new myEdu.util.tplManager();
-              var newTpl = template.getNew('name', {
-                  'first_name': {
-                      'value': 'George',
-                      'title': 'First Name'
-                  },
-                  'last_name': 'Harrison'
-              });
-              
-              $(newTpl.node).hide().appendTo('body').fadeIn('slow');
-            });
-        </script>
-    </head>
-    <body>
-        <div class="tpl" name="name">
-            First Name: <span class="var" name="first_name">Michael</span> <br />
-            Last Name: <span class="var" name="last_name">Lasky</span> 
-        </div>
-    </body>
+  <head>
+    <title>Template Test</title>
+    <script src="http://www.google.com/jsapi"></script>
+    <script>google.load("jquery", "1");</script>
+    <script src="jtple.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="index.css" type="text/css" media="screen" title="no title" charset="utf-8">
+    <script>
+      $(document).ready(function() {
+        var template = new myEdu.util.tplManager();
+        
+        $('#submit').click(function() {
+          var title = $('#title').val();
+          var comment = $('#comment').val();
+          
+          var newComment = template.getNew('comment', {
+            'title': title,
+            'comment': comment
+          });
+       
+          $(newComment.node).appendTo('#comments').fadeIn();
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="comments"></div>
+    <form id="add-comment">
+      <input type="text" name="title" id="title" /><br />
+      <textarea name="comment" rows="8" cols="40" id="comment"></textarea><br />
+      <input type="button" name="submit" value="Submit" id="submit" />
+    </form>
+    <div style="display: none">
+      <div class="tpl comment" name="comment">
+        Title: <span class="var" name="title"></span><br />
+        Comment: <br />
+        <span class="var" name="comment"></span>
+      </div>
+  </body>
 </html>

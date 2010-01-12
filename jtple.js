@@ -67,13 +67,15 @@ myEdu.util.tplManager.prototype = {
   'getNew': function(name, vars) {
     var i = this.templates.length;
     var tpl;
+    var cleanTpl = false;
     
     // Loop through the current templates and look for one with a matching name.
     while (i--) {
       tpl = this.templates[i];
       if (tpl.name === name) {
         // Get a scrubbed version of it's DOM
-        var cleanTpl = tpl.scrubbed();
+        cleanTpl = tpl.scrubbed();
+        break;
       }
     }
     
@@ -99,6 +101,9 @@ myEdu.util.tplManager.prototype = {
   
   /**
    * Generates a unique string of length len (default: 9)
+   * This is here to generate unique id's for DOM nodes.   The functionality
+   * should probably be in another place (not in the template code), but 
+   * it's here to reduce external dependancies.
    *
    * @param: Int len - Length of string to produce
    * @return: String - String of random characaters of length len || 9
@@ -132,11 +137,17 @@ myEdu.util.tpl = function(o) {
   this.node = o.node;                 // DOM node to instantiate template upon
   this.vars = [];                     // Array of template vars
   this.manager = o.manager || {};     // tplManager object
-  this.name = $(this.node).attr('name');  // Name of the template
   
+  var $node = $(this.node);
+  this.name = $node.attr('name');  // Name of the template
+    
   // So we don't need to bind current scope into each() below
   var self = this;
   
+  // Give this template a unique id if it doesn't already have one.
+  if (!$node.attr('id')) {
+    $node.attr('id', this.manager._generateId());
+  }
   // Configuration.  Can be overidden by o.config vars
   this._config = {
     'varClass': '.var'
@@ -148,7 +159,7 @@ myEdu.util.tpl = function(o) {
   
   // Store vars
   $(config.varClass, this.node).each(function(i) {
-    // Instiate a new variable object for this node.
+    // Instantiate a new variable object for this node.
     self.vars.push(new myEdu.util.tplVariable({
       'node': this,
       'template': self
@@ -159,8 +170,6 @@ myEdu.util.tpl = function(o) {
 };
 
 myEdu.util.tpl.prototype = {
-  
-  '$': $(this.node),
   
   /**
    * Clones a DOM tree and scrubs it of values.  Looks at children of passed in
@@ -181,29 +190,34 @@ myEdu.util.tpl.prototype = {
     var attr_types = this.manager.attrTypes; // Localize the attr types array
     var attr, cNode;  // Local vars for the current attribute and child node
     var self = this;  
+    var $node = $(node);
     
     // Check if the node has a value for each attribute in attr_types.  If so, 
     // apply that name and val to the new node
     while (i--) {
       attr = attr_types[i];
-      if ($(node).attr(attr)) {
-        sNode.attr(attr, $(node).attr(attr));
+      if ($node.attr(attr)) {
+        sNode.attr(attr, $node.attr(attr));
       }
     }
     
+    // If this is the root node for the template then we'll set display:none
+    // so the user can show the template at their leisure
+    if (node === this.node) {
+      sNode.css({'display': 'none'});
+    }
     // If it already has an ID give it a new one so we don't have a duplicate
     // id in the DOM.  
     if (sNode.attr('id')) {
       sNode.attr('id', this.manager._generateId()); 
     }
     
-    // If this node is a variable then empty it, otherwise make sure the new 
-    // node has the correct value.
+    // If this node is a variable then empty it
     if (sNode.hasClass(this._config.varClass)) {
       sNode.empty();
+      sNode.get(0).innerHTML = '';
     }
     
-    console.log($(node))
     // Look at the children of the current node and call scrubbed recursively 
     // on each.  Then append them to the current scrubbed node.
     $.each(node.childNodes, function() {
@@ -259,7 +273,7 @@ myEdu.util.tpl.prototype = {
  * @return: Obj - tplVariable instance (this).
  **/
 myEdu.util.tplVariable = function(o) {
-  this.node = o.node;
+  this.node = o.node || {};
   this.template = o.template || {};
   var $node = $(this.node); // Cache jQuery obj for this.node locally
 
