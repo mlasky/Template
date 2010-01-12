@@ -77,6 +77,8 @@ myEdu.util.tplManager.prototype = {
       }
     }
     
+    // Seems something went awry, abort for now.
+    // TODO: Better error handling.  
     if (!cleanTpl) {
       return false;
     }
@@ -140,7 +142,8 @@ myEdu.util.tpl = function(o) {
     'varClass': '.var'
   };
 
-  if (o.config) { $.extend(this._config, o.config); }
+  // Override config with settings
+  if (o.config) { $.extend(this._config, o.config); } 
   var config = this._config; // Alias this._config to config to save keystrokes
   
   // Store vars
@@ -188,21 +191,31 @@ myEdu.util.tpl.prototype = {
       }
     }
     
+    // If it already has an ID give it a new one so we don't have a duplicate
+    // id in the DOM.  
+    if (sNode.attr('id')) {
+      sNode.attr('id', this.manager._generateId()); 
+    }
     
-
     // If this node is a variable then empty it, otherwise make sure the new 
     // node has the correct value.
     if (sNode.hasClass(this._config.varClass)) {
       sNode.empty();
-      // Give the node a new ID
-      sNode.attr('id', this.manager._generateId());
     }
-        
+    
+    console.log($(node))
     // Look at the children of the current node and call scrubbed recursively 
     // on each.  Then append them to the current scrubbed node.
-    $(node).children().each(function() {
-      cNode = self.scrubbed(this);
-      cNode.appendTo(sNode);
+    $.each(node.childNodes, function() {
+      // Check if this is a text node, if so just append it.
+      if (this.nodeName === '#text') {
+        $(this).clone().appendTo(sNode);
+      }
+      else {
+        // If it's not a text node then call scrubbed on it, then append it.
+        cNode = self.scrubbed(this);
+        cNode.appendTo(sNode);
+      }
     });
     
     // Return a scrubbed DOM tree.
