@@ -1,0 +1,13 @@
+.user {
+  font-family: verdana;
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+.user span {
+  font-weight: normal;
+}
+.comment {
+  margin-bottom: 1em;
+  border: 1px dotted #c0c0c0;
+  padding: 0.5em;
+}
