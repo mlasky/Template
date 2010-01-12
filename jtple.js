@@ -355,7 +355,7 @@ myEdu.util.tplVariable.prototype = {
     }
     return this;
   },
-  
+
   /**
    * Gets and sets vals for variable nodes.
    * Works like jQuery's val() method.  If a value is passed in it sets 
@@ -373,7 +373,7 @@ myEdu.util.tplVariable.prototype = {
     return $(this.node).html(); // Return the current node value
   },
   
-  /**
+  /** 
    * Sets values and attributes of the variable.
    * If val is just a string it sets the variables value to val.  
    * If val is an object it sets the corresponding attributes and values
