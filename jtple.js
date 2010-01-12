@@ -18,6 +18,7 @@ myEdu.util = myEdu.util || {};
 myEdu.util.tplManager = function(settings) {
   var self = this;
   this.templates = []; // Array containing all the templates being used.
+  this._raw_nodes = {}; // Array containing scrubbed versions of each template 
   
   // Attributes that we care about when cloning dom nodes for new templates.
   this.attrTypes = [
@@ -60,23 +61,32 @@ myEdu.util.tplManager.prototype = {
    *
    * @param: String name - name of template to get
    * @param: Obj vars - Object hash containing variable names and values.
-   * @return: Mixed - myEdu.util.tpl instance on success, Boolean false otherwise.
+   * @return: Mixed - myEdu.util.tpl instance on success, Boolean false otherwise
    *
-   * TODO: Store the resulting clean DOM node and clone that on next call for 
-   * the same template. 
    **/
   'getNew': function(name, vars) {
-    var i = this.templates.length;
     var tpl;
     var cleanTpl = false;
     
-    // Loop through the current templates and look for one with a matching name.
-    while (i--) {
-      tpl = this.templates[i];
-      if (tpl.name === name) {
-        // Get a scrubbed version of it's DOM
-        cleanTpl = tpl.scrubbed();
-        break;
+    // Check to see if we've created a scrubbed version of this template before
+    // If so, use that instead of recreating a scrubbed DOM
+    if (this._raw_nodes[name] !== undefined) {
+      cleanTpl = this._raw_nodes[name].clone();
+    }
+    
+    if (!cleanTpl) {
+      var j = this.templates.length;
+      
+      // Loop through current templates and look for one with a matching name
+      while (j--) {
+        tpl = this.templates[j];
+        if (tpl.name === name) {
+          // Get a scrubbed version of it's DOM
+          cleanTpl = tpl.scrubbed();
+          // Store this DOM for later use
+          this._raw_nodes[name] = cleanTpl.clone();
+          break;
+        }
       }
     }
     
@@ -145,7 +155,7 @@ myEdu.util.tpl = function(o) {
   // So we don't need to bind current scope into each() below
   var self = this;
   
-  // Give this template a unique id if it doesn't already have one.
+  // Give this template a unique id if it doesn't already have one
   if (!$node.attr('id')) {
     $node.attr('id', this.manager._generateId());
   }
@@ -160,7 +170,7 @@ myEdu.util.tpl = function(o) {
   
   // Store vars
   $(config.varClass, this.node).each(function(i) {
-    // Instantiate a new variable object for this node.
+    // Instantiate a new variable object for this node
     self.vars.push(new myEdu.util.tplVariable({
       'node': this,
       'template': self
@@ -208,7 +218,7 @@ myEdu.util.tpl.prototype = {
       sNode.css({'display': 'none'});
     }
     // If it already has an ID give it a new one so we don't have a duplicate
-    // id in the DOM.  
+    // id in the DOM
     if (sNode.attr('id')) {
       sNode.attr('id', this.manager._generateId()); 
     }
@@ -220,20 +230,20 @@ myEdu.util.tpl.prototype = {
     }
     
     // Look at the children of the current node and call scrubbed recursively 
-    // on each.  Then append them to the current scrubbed node.
+    // on each.  Then append them to the current scrubbed node
     $.each(node.childNodes, function() {
-      // Check if this is a text node, if so just append it.
+      // Check if this is a text node, if so just append it
       if (this.nodeName === '#text') {
         $(this).clone().appendTo(sNode);
       }
       else {
-        // If it's not a text node then call scrubbed on it, then append it.
+        // If it's not a text node then call scrubbed on it, then append it
         cNode = self.scrubbed(this);
         cNode.appendTo(sNode);
       }
     });
     
-    // Return a scrubbed DOM tree.
+    // Return a scrubbed DOM tree
     return sNode;
   },
   
@@ -283,7 +293,7 @@ myEdu.util.tplVariable = function(o) {
   this._setAttrs(); 
   
   // Check if this node already has an ID.  If not generate a unique one and 
-  // set it.
+  // set it
   if (!this._id) {
     this._id = this.template.manager._generateId();
     $node.attr('id', this._id);
@@ -329,7 +339,7 @@ myEdu.util.tplVariable.prototype = {
     var attrTypes = this.template.manager.attrTypes;
     var i = attrTypes.length;
      
-    // Local variables for current type and node value.
+    // Local variables for current type and node value
     var type, val; 
     
     // Loop through the attribute types
@@ -376,13 +386,13 @@ myEdu.util.tplVariable.prototype = {
    'set': function(val) {
      var self = this;
      
-     // If val is an object then length will be undefined.
+     // If val is an object then length will be undefined
      if (val.length === undefined) {
        
        // Each obj hash property
        $.each(val, function(i) {
          // Check for 'value' specifically because we need to call val instead
-         // of attr in that case.
+         // of attr in that case
          if (i === 'value') {
            self.val(this);
          }
@@ -392,7 +402,7 @@ myEdu.util.tplVariable.prototype = {
        });
      }
      else {
-       // They just passed a string in for a value so just set it.  
+       // They just passed a string in for a value so just set it
        this.val(val);
      }
      return this;
