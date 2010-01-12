@@ -1,6 +1,7 @@
 /**
  * MyEdu Template Manager
  * @author: Michael Lasky
+ * @requires: jQuery v1.3.2
  **/
 var myEdu = myEdu || {};
 myEdu.util = myEdu.util || {};
