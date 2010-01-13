@@ -16,7 +16,8 @@
           var comment = $('#comment').val();
           var href = $('#href').val();
           var link = $('#link').val();
-          var website;
+          var image = $('#image').val();
+          var website, user_image;
           
           if (link && href) { 
             website = { 'link': { 'href': href, 'value': link } };
@@ -25,10 +26,18 @@
             website = null;
           }
           
+          if (image) {
+            user_image = { 'image': { 'src': image } };
+          }
+          else {
+            user_image = null;
+          }
+          
           var newComment = template.getNew('comment', {
             'title': title,
             'comment': comment,
-            'website': website
+            'website': website,
+            'user_image': user_image
           });
 
           newComment.appendTo('#comments').fadeIn();
@@ -38,22 +47,41 @@
     </script>
   </head>
   <body>
+    
     <div id="comments"></div>
+    
     <form id="add-comment">
+    
       <input type="text" name="title" id="title" /><br />
       <textarea name="comment" rows="8" cols="40" id="comment"></textarea><br />
+      
       Website Name: <input type="text" name="link" id="link" /><br />
       Website URL: <input type="text" name="href" id="href" /><br /> 
+      User Image: <input type="text" name="image" id="image"><br />
+      
       <input type="button" name="submit" value="Submit" id="submit" />
+    
     </form>
+    
+    http://mashable.com/wp-content/uploads/2008/01/stallman.png
+    
+    <!-- Templates -->
     <div style="display: none">
       <div class="tpl comment" name="comment">
         Title: <span class="var" name="title"></span><br />
         Comment: <br />
         <span class="var" name="comment"></span>
+        
         <div class="tpl" name="website">
           Website: <a href='' class="var" name="link"></a>
         </div>
+        
+        <div class="tpl" name="user_image">
+          <img src="" class="var user-image" name="image" />
+        </div>
       </div>
+    </div>
+    <!-- End Templates -->
+    
   </body>
 </html>

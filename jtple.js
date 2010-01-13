@@ -259,7 +259,11 @@ myEdu.util.tpl.prototype = {
     // If this node is a variable then empty it
     if (sNode.hasClass(this._config.varClass)) {
       sNode.empty();
-      sNode.get(0).innerHTML = '';
+      // Some nodes don't have innerHTML
+      if (sNode.get(0).innerHTML) {
+        sNode.get(0).innerHTML = '';
+      }
+      
     }
     
     // Look at the children of the current node and call scrubbed recursively 
