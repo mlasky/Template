@@ -10,17 +10,29 @@
     <script>
       $(document).ready(function() {
         var template = new myEdu.util.tplManager();
-        console.log(template)
+        
         $('#submit').click(function() {
           var title = $('#title').val();
           var comment = $('#comment').val();
+          var href = $('#href').val();
+          var link = $('#link').val();
+          var website;
+          
+          if (link && href) { 
+            website = { 'link': { 'href': href, 'value': link } };
+          }
+          else {
+            website = null;
+          }
           
           var newComment = template.getNew('comment', {
-            'title': {'value': title, 'id': 'Hello'},
+            'title': title,
             'comment': comment,
+            'website': website
           });
-          
+
           newComment.appendTo('#comments').fadeIn();
+
         });
       });
     </script>
@@ -30,6 +42,8 @@
     <form id="add-comment">
       <input type="text" name="title" id="title" /><br />
       <textarea name="comment" rows="8" cols="40" id="comment"></textarea><br />
+      Website Name: <input type="text" name="link" id="link" /><br />
+      Website URL: <input type="text" name="href" id="href" /><br /> 
       <input type="button" name="submit" value="Submit" id="submit" />
     </form>
     <div style="display: none">
@@ -37,6 +51,9 @@
         Title: <span class="var" name="title"></span><br />
         Comment: <br />
         <span class="var" name="comment"></span>
+        <div class="tpl" name="website">
+          Website: <a href='' class="var" name="link"></a>
+        </div>
       </div>
   </body>
 </html>

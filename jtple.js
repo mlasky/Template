@@ -12,13 +12,14 @@ myEdu.util = myEdu.util || {};
  * creates a template (tpl) instance for each and stores them in it's template
  * index.
  *
- * @param: Obj settings - object of config keys / values to override def config
- * @return: Obj - tplManager instance (this).
+ * @param settings - object of config keys / values to override def config
+ * @return Obj - tplManager instance (this).
  **/
 myEdu.util.tplManager = function(settings) {
   var self = this;
   this.templates = []; // Array containing all the templates being used.
-  this._raw_nodes = {}; // Array containing scrubbed versions of each template 
+  this._rawNodes = {}; // Array containing scrubbed versions of each template 
+  this.hasTemplate = {}; // Index for tpl name set true once one is processed
   
   // Attributes that we care about when cloning dom nodes for new templates.
   this.attrTypes = [
@@ -40,14 +41,17 @@ myEdu.util.tplManager = function(settings) {
   
   // Each node with class config.templateClass
   $(config.templateClass).each(function() {
-    // Create a new template and push it onto the index.
-    self.templates.push(new myEdu.util.tpl({
-      'node': this, 
-      'config': config,
-      'manager': self
-    }));
+    if (typeof self.hasTemplate[$(this).attr('name')] === 'undefined') {
+      
+      self.hasTemplate[$(this).attr('name')] = true;
+      // Create a new template and push it onto the index.
+      self.templates.push(new myEdu.util.tpl({
+        'node': this, 
+        'config': config,
+        'manager': self
+      }));
+    }
   });
-  
   return this;
 };
 
@@ -59,9 +63,9 @@ myEdu.util.tplManager.prototype = {
    * If vars is set, it looks through the template's variables and puts in the 
    * values from vars.  
    *
-   * @param: String name - name of template to get
-   * @param: Obj vars - Object hash containing variable names and values.
-   * @return: Mixed - myEdu.util.tpl instance on success, Boolean false otherwise
+   * @param name - String name of template to get
+   * @param vars - Object hash containing variable names and values.
+   * @return Mixed - myEdu.util.tpl instance on success, Boolean false otherwise
    *
    **/
   'getNew': function(name, vars) {
@@ -70,8 +74,8 @@ myEdu.util.tplManager.prototype = {
     
     // Check to see if we've created a scrubbed version of this template before
     // If so, use that instead of recreating a scrubbed DOM
-    if (this._raw_nodes[name] !== undefined) {
-      cleanTpl = this._raw_nodes[name].clone();
+    if (this._rawNodes[name] !== undefined) {
+      cleanTpl = this._rawNodes[name].clone();
     }
     
     if (!cleanTpl) {
@@ -84,7 +88,7 @@ myEdu.util.tplManager.prototype = {
           // Get a scrubbed version of it's DOM
           cleanTpl = tpl.scrubbed();
           // Store this DOM for later use
-          this._raw_nodes[name] = cleanTpl.clone();
+          this._rawNodes[name] = cleanTpl.clone();
           break;
         }
       }
@@ -99,9 +103,10 @@ myEdu.util.tplManager.prototype = {
     // Initiate a new instance of myEdu.util.tpl with the scrubbed DOM
     cleanTpl = new myEdu.util.tpl({
       'node': cleanTpl.get(0), 
-      'manager': this
+      'manager': this,
+      'config': this._config
     });
-    
+
     // If vars were passed in apply them to the template's variables
     if (vars) {
       cleanTpl.set(vars);
@@ -116,8 +121,8 @@ myEdu.util.tplManager.prototype = {
    * should probably be in another place (not in the template code), but 
    * it's here to reduce external dependancies.
    *
-   * @param: Int len - Length of string to produce
-   * @return: String - String of random characaters of length len || 9
+   * @param len - Integer length of string to produce
+   * @return String - String of random characaters of length len || 9
    **/ 
   '_generateId': function(len) {
     var chars = "-abcdefghiklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZ";
@@ -137,17 +142,18 @@ myEdu.util.tplManager.prototype = {
  * Template object.  Holds various properties and methods for working with 
  * instantiated templates.  
  *
- * @param: Obj o - Keyword arguments for the template. Including: 
+ * @param o - Keyword object arguments for the template. Including: 
  *                  node: DOM node to instantiate template upon   REQUIRED
  *                  manager: Template manager object              REQUIRED
  *                  config: Config settings overrides             OPTIONAL
- * @return: Obj - tpl instance (this).
+ * @return Obj - tpl instance (this).
  **/
 myEdu.util.tpl = function(o) {
 
   this.node = o.node;                 // DOM node to instantiate template upon
   this.vars = [];                     // Array of template vars
   this.manager = o.manager || {};     // tplManager object
+  this._subTemplates = {};            // Holds any sub-templates in this tpl
   
   var $node = $(this.node);
   this.name = $node.attr('name');  // Name of the template
@@ -170,13 +176,39 @@ myEdu.util.tpl = function(o) {
   
   // Store vars
   $(config.varClass, this.node).each(function(i) {
-    // Instantiate a new variable object for this node
-    self.vars.push(new myEdu.util.tplVariable({
-      'node': this,
-      'template': self
-    }));
+    
+    // Get the id of the first parent with the template class.  Compare that
+    // id against this template's id to make sure this variable is a direct
+    // template var and not a sub-template var.
+    var parent_id = $(this).parents(config.templateClass).get(0).id;
+    if (parent_id === $node.attr('id')) {
+      
+      // Instantiate a new variable object for this node
+      self.vars.push(new myEdu.util.tplVariable({
+        'node': this,
+        'template': self
+      }));
+    }
   });
-  
+
+  // Look for any sub-templates within this one and do stuff to them.
+  $(config.templateClass, this.node).each(function() {
+    var name = $(this).attr('name');
+    if (typeof self.manager.hasTemplate[name] === 'undefined') {
+      var tpl = new myEdu.util.tpl({
+        'node': this,
+        'manager': self.manager,
+        'config': self._config
+      });
+      self.manager.templates.push(tpl);
+    }
+    
+    self._subTemplates[name] = self.manager.getNew(name);
+    
+    var parent = $(this).parent();
+    $(this).remove();
+    self._subTemplates[name].appendTo(parent);
+  });
   return this;
 };
 
@@ -188,8 +220,8 @@ myEdu.util.tpl.prototype = {
    * mirrors the original but does not === the original and that does not have
    * values for it's variable nodes.
    * 
-   * @param: HTMLElement node - Parent node.  Defaults to this.node (tpl root)
-   * @return: HTMLElement - DOM tree similar to the passed node but without 
+   * @param node - HTMLElement Parent node.  Defaults to this.node (tpl root)
+   * @return HTMLElement - DOM tree similar to the passed node but without 
    *                        variable node values.
    **/
   'scrubbed': function(node) {
@@ -217,6 +249,7 @@ myEdu.util.tpl.prototype = {
     if (node === this.node) {
       sNode.css({'display': 'none'});
     }
+    
     // If it already has an ID give it a new one so we don't have a duplicate
     // id in the DOM
     if (sNode.attr('id')) {
@@ -253,24 +286,27 @@ myEdu.util.tpl.prototype = {
    * TODO: Wrap other jquery manipulation methods or rethink if the template
    * objects need to be special or can they just be jQuery objects
    *
-   * @param: Mixed node: DOM Node, jQuery object, or selector. 
-   * @return: Obj - jQuery object
+   * @param node: DOM Node, jQuery object, or selector. 
+   * @return Obj - jQuery object
    **/
    'appendTo': function(node) {
      return $(this.node).appendTo(node);
    },
   
+  'show': function() {
+    return $(this.node).show();
+  },
+  
   /**
    * Loops through object vars passed in and sets the values / attributes for
    * the template variables accordingly.
    *
-   * @param: Obj vars - Variables to set
-   * @return: Obj - tpl instance (this).
+   * @param vars - Object of variables to set
+   * @return Obj - tpl instance (this).
    **/
   'set': function(vars) {
     var j, vbl;
     var self = this;
-    
     // Each var
     $.each(vars, function(i) {
       j = self.vars.length; // Len of current template var array
@@ -282,6 +318,12 @@ myEdu.util.tpl.prototype = {
           vbl.set(this); // Set the data
         }
       }
+     
+      if (this.toString() !== '[object DOMWindow]' && 
+          typeof self._subTemplates[i] !== 'undefined') 
+      {
+        self._subTemplates[i].set(this).show();
+      }
     });
     return this;
   }
@@ -291,10 +333,10 @@ myEdu.util.tpl.prototype = {
  * Template Variable object.  Holds various properties and methods for working 
  * with instantiated template variables.  
  *
- * @param: Obj o - Keyword arguments for the variable. Including: 
+ * @param o - Keyword object arguments for the variable. Including: 
  *                  node: DOM node to instantiate variable upon   REQUIRED
  *                  template: Template which contains var         REQUIRED
- * @return: Obj - tplVariable instance (this).
+ * @return Obj - tplVariable instance (this).
  **/
 myEdu.util.tplVariable = function(o) {
   this.node = o.node || {};
@@ -322,9 +364,9 @@ myEdu.util.tplVariable.prototype = {
    * If just attr is passed then it returns the value for that attribute. 
    * If attr and val are passed it sets attr to the new val and returns it.
    * 
-   * @param: String attr - Attribute name to get or set
-   * @param: String val - Optional value to set attribute to
-   * @return: String - Current value of attr
+   * @param attr - String Attribute name to get or set
+   * @param val - String Optional value to set attribute to
+   * @return String - Current value of attr
    **/
   'attr': function(attr, val) {
     var property_attr = '_' + attr;
@@ -345,7 +387,7 @@ myEdu.util.tplVariable.prototype = {
    * if the this.node has that attribute.  If so it sends it through this.attr
    * to set the property val.
    *
-   * @return: Obj - tplVariable instance (this). 
+   * @return Obj - tplVariable instance (this). 
    **/
   '_setAttrs': function() {
     
@@ -376,8 +418,8 @@ myEdu.util.tplVariable.prototype = {
    * the object property for that value sets the node value to it.  
    * If val isn't passed in (null) then it just returns the node's value.
    *
-   * @param: String val - Optional value to set the node to.
-   * @return: String - Current value of the node.   
+   * @param val - String Optional value to set the node to.
+   * @return String - Current value of the node.   
    **/
   'val': function(val) {
     if (val) {
@@ -392,14 +434,13 @@ myEdu.util.tplVariable.prototype = {
    * If val is just a string it sets the variables value to val.  
    * If val is an object it sets the corresponding attributes and values
    *
-   * @param: Mixed val -  String: Sets variables value.  
-   *                      Object: Sets value and attributes
-   * @return: Obj - tplVariable instance (this). 
+   * @param val -  String: Sets variables value.  
+   *               Object: Sets value and attributes
+   * @return Obj - tplVariable instance (this). 
    *                      
    **/
    'set': function(val) {
      var self = this;
-     
      // If val is an object then length will be undefined
      if (val.length === undefined) {
        
