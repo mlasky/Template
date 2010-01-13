@@ -248,6 +248,19 @@ myEdu.util.tpl.prototype = {
   },
   
   /**
+   * Wraps jQuery appendTo but works on this.node.
+   * 
+   * TODO: Wrap other jquery manipulation methods or rethink if the template
+   * objects need to be special or can they just be jQuery objects
+   *
+   * @param: Mixed node: DOM Node, jQuery object, or selector. 
+   * @return: Obj - jQuery object
+   **/
+   'appendTo': function(node) {
+     return $(this.node).appendTo(node);
+   },
+  
+  /**
    * Loops through object vars passed in and sets the values / attributes for
    * the template variables accordingly.
    *
@@ -314,13 +327,14 @@ myEdu.util.tplVariable.prototype = {
    * @return: String - Current value of attr
    **/
   'attr': function(attr, val) {
+    var property_attr = '_' + attr;
     if (val) {
-      this['_'+attr] = val;         // Set object property
-      $(this.node).attr(attr, val); // Set it on the DOM node itself
+      this[property_attr] = val;        // Set object property
+      $(this.node).attr(attr, val);     // Set it on the DOM node itself
     }
     
     // Return the current value for attr
-    return this['_'+attr];
+    return this[property_attr];
   },
   
   /**

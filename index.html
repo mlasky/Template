@@ -10,17 +10,17 @@
     <script>
       $(document).ready(function() {
         var template = new myEdu.util.tplManager();
-        
+        console.log(template)
         $('#submit').click(function() {
           var title = $('#title').val();
           var comment = $('#comment').val();
           
           var newComment = template.getNew('comment', {
-            'title': title,
-            'comment': comment
+            'title': {'value': title, 'id': 'Hello'},
+            'comment': comment,
           });
-       
-          $(newComment.node).appendTo('#comments').fadeIn();
+          
+          newComment.appendTo('#comments').fadeIn();
         });
       });
     </script>
