@@ -12,6 +12,7 @@
         var template = new myEdu.util.tplManager();
         
         $('#submit').click(function() {
+          // Just grab the info from the form
           var title = $('#title').val();
           var comment = $('#comment').val();
           var href = $('#href').val();
@@ -19,6 +20,8 @@
           var image = $('#image').val();
           var website, user_image;
           
+          // If they passed both link text and an href then create the 
+          // data structure for a link template
           if (link && href) { 
             website = { 'link': { 'href': href, 'value': link } };
           }
@@ -26,6 +29,8 @@
             website = null;
           }
           
+          // If they passed an image src then create the structure for the 
+          // image template
           if (image) {
             user_image = { 'image': { 'src': image } };
           }
@@ -33,15 +38,26 @@
             user_image = null;
           }
           
+          // Create a new comment.  If website or user_image are null it won't
+          // append those templates.
           var newComment = template.getNew('comment', {
-            'title': title,
-            'comment': comment,
-            'website': website,
-            'user_image': user_image
+              'title': title, 
+              'comment': comment, 
+              'website': website, 
+              'user_image': user_image 
           });
-
+          
+          // Append the comment and show it.
           newComment.appendTo('#comments').fadeIn();
-
+        });
+        
+        $('.add-image-button').live('click', function() {
+            var parent_id = $(this).parents('.tpl').attr('id');
+            
+            var parent = template.get(parent_id);
+            var src = $('.additional-image', parent.node).val();
+            
+            parent.addTpl('user_image', {'image': {'src': src } });
         });
       });
     </script>
@@ -79,7 +95,11 @@
         <div class="tpl" name="user_image">
           <img src="" class="var user-image" name="image" />
         </div>
-      </div>
+        
+        <br />
+        <h3>Add another image to this template</h3>
+        <input type='text' name='additional-image' class='additional-image' />
+        <input type="button" name="add-image" value="Submit" class='add-image-button' />
     </div>
     <!-- End Templates -->
     
