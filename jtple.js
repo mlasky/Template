@@ -323,12 +323,10 @@ myEdu.util.tpl.prototype = {
   
   'addTpl': function(tpl, vars) {
     if (!tpl) {
-      console.log('Missing template name');
       return false;
     }
     
     if (!this.hasSubTemplate(tpl)) {
-      console.log('Does not have this sub template: ' + tpl);
       return false;
     }
     
@@ -556,11 +554,22 @@ myEdu.util.tpl.prototype = {
    * @return Obj - tpl instance (this).
    **/
   'set': function(vars) {
-    var j, vbl;
+    var vbl;
     var self = this;
+    
     // Each var
     $.each(vars, function(i) {
-      j = self.vars.length; // Len of current template var array
+      var j = self.vars.length; // Len of current template var array
+      
+      if (i === 'tplEvents') {
+        var ev;
+        var k = this.length;
+        while (k--) {
+          ev = this[k];
+          $(ev.selector, self.node).bind(ev.ev, ev.fn);
+        }
+        return;
+      }
       
       // Look at each template var to see if it matches the current (i)
       while (j--) {
