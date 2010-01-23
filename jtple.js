@@ -84,6 +84,7 @@ myEdu.util.tplManager.prototype = {
         if (tpl.name === name) {
           // Get a scrubbed version of it's DOM
           cleanTpl = tpl.scrubbed();
+    
           // Store this DOM for later use
           this._rawNodes[name] = cleanTpl.clone();
           break;
@@ -106,7 +107,7 @@ myEdu.util.tplManager.prototype = {
       'manager': this,
       'config': this._config
     });
-
+    
     // If vars were passed in apply them to the template's variables
     if (vars) {
       cleanTpl.set(vars);
@@ -545,6 +546,21 @@ myEdu.util.tpl.prototype = {
       return this;
     },
   
+  '_applyEvents': function(events) {
+    if (!events) {
+      return false;
+    }
+  
+    var ev;
+    var k = events.length;
+    while (k--) {
+      ev = events[k];
+      $(ev.selector, this.node).unbind().live(ev.ev, ev.fn);
+    }
+    
+    this._tplEvents = events;
+    return true;
+  },
   
   /**
    * Loops through object vars passed in and sets the values / attributes for
@@ -562,13 +578,7 @@ myEdu.util.tpl.prototype = {
       var j = self.vars.length; // Len of current template var array
       
       if (i === 'tplEvents') {
-        var ev;
-        var k = this.length;
-        while (k--) {
-          ev = this[k];
-          $(ev.selector, self.node).bind(ev.ev, ev.fn);
-        }
-        return;
+        self._applyEvents(this);
       }
       
       // Look at each template var to see if it matches the current (i)
