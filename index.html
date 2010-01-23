@@ -96,32 +96,33 @@
     </script>
   </head>
   <body>
-    <h1>myEdu Javascript templating proposal proof of concept</h1>
-    <p>
-      This is a little demo of the javascript templating prototype.  
-      Enter some values into the field's below. Click submit to add the 
-      "comment".  Features include adding sub-templates (via the form within 
-      each comment), as well as simple event binding.  
-    </p>
-    <p>
-      View source to see implementation.  
-    </p>   
-    <div id="comments"></div>
+    <div id='content'>
+      <h1>Javascript Templating Proof of Concept</h1>
+      <p>
+        This is a little demo of the javascript templating prototype.  
+        Enter some values into the field's below. Click submit to add the 
+        "comment".  Features include adding sub-templates (via the form within 
+        each comment), as well as simple event binding.  
+      </p>
+      <p>
+        View source to see implementation.  
+      </p>   
+      <div id="comments"></div>
     
-    <form id="add-comment">
+      <form id="add-comment">
     
-      <input type="text" name="title" id="title" /><br />
-      <textarea name="comment" rows="8" cols="40" id="comment"></textarea><br />
+        <input type="text" name="title" id="title" /><br />
+        <textarea name="comment" rows="8" cols="40" id="comment"></textarea><br />
       
-      Website Name: <input type="text" name="link" id="link" /><br />
-      Website URL: <input type="text" name="href" id="href" /><br /> 
-      User Image: <input type="text" name="image" id="image"><br />
+        Website Name: <input type="text" name="link" id="link" /><br />
+        Website URL: <input type="text" name="href" id="href" /><br /> 
+        User Image: <input type="text" value="http://mashable.com/wp-content/uploads/2008/01/stallman.png" name="image" id="image"><br />
       
-      <input type="button" name="submit" value="Submit" id="submit" />
+        <input type="button" name="submit" value="Submit" id="submit" />
+
+      </form>
+    </div>
     
-    </form>
-    
-    http://mashable.com/wp-content/uploads/2008/01/stallman.png
     
     <!--  Templates -->
     <!--  These are the template nodes that the template manager looks for and 
@@ -149,7 +150,7 @@
         
         <br />
         <h3>Add another image to this template</h3>
-        <input type='text' name='additional-image' class='additional-image' />
+        <input type='text' name='additional-image' value="http://mashable.com/wp-content/uploads/2008/01/stallman.png" class='additional-image' />
         <input type="button" name="add-image" value="Submit" class='add-image-button' />
     </div>
     <!-- /comment template -->
