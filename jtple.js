@@ -3,8 +3,7 @@
  * @author: Michael Lasky
  * @requires: jQuery v1.3.2
  **/
-var myEdu = myEdu || {};
-myEdu.util = myEdu.util || {};
+var jTpl = {};
 
 /**
  * Main Template Management object.
@@ -15,7 +14,7 @@ myEdu.util = myEdu.util || {};
  * @param settings - object of config keys / values to override def config
  * @return Obj - tplManager instance (this).
  **/
-myEdu.util.tplManager = function(settings) {
+jTpl.tplManager = function(settings) {
   var self = this;
   this.templates = []; // Array containing all the templates being used.
   this._rawNodes = {}; // Array containing scrubbed versions of each template 
@@ -43,7 +42,7 @@ myEdu.util.tplManager = function(settings) {
     var name = $(this).attr('name');
     if (!self.hasTemplate(name)) {
       // Create a new template and push it onto the index.
-      new myEdu.util.tpl({
+      new jTpl.tpl({
         'node': this, 
         'config': config,
         'manager': self
@@ -53,7 +52,7 @@ myEdu.util.tplManager = function(settings) {
   return this;
 };
 
-myEdu.util.tplManager.prototype = {
+jTpl.tplManager.prototype = {
   
   /**
    * Looks through the template index and finds one with a matching name.
@@ -63,7 +62,7 @@ myEdu.util.tplManager.prototype = {
    *
    * @param name - String name of template to get
    * @param vars - Object hash containing variable names and values.
-   * @return Mixed - myEdu.util.tpl instance on success, Boolean false otherwise
+   * @return Mixed - jTpl.tpl instance on success, Boolean false otherwise
    **/
   'getNew': function(name, vars) {
     var tpl;
@@ -100,8 +99,8 @@ myEdu.util.tplManager.prototype = {
     // This is a new template so we'll reset it's ID.
     cleanTpl.attr('id', null);
     
-    // Initiate a new instance of myEdu.util.tpl with the scrubbed DOM
-    cleanTpl = new myEdu.util.tpl({
+    // Initiate a new instance of jTpl.tpl with the scrubbed DOM
+    cleanTpl = new jTpl.tpl({
       'node': cleanTpl.get(0), 
       'manager': this,
       'config': this._config
@@ -200,7 +199,7 @@ myEdu.util.tplManager.prototype = {
  *                  config: Config settings overrides             OPTIONAL
  * @return Obj - tpl instance (this).
  **/
-myEdu.util.tpl = function(o) {
+jTpl.tpl = function(o) {
 
   this.node = o.node;                 // DOM node to instantiate template upon
   this.vars = [];                     // Array of template vars
@@ -239,7 +238,7 @@ myEdu.util.tpl = function(o) {
     if (parent_id === $node.attr('id')) {
       
       // Instantiate a new variable object for this node
-      self.vars.push(new myEdu.util.tplVariable({
+      self.vars.push(new jTpl.tplVariable({
         'node': this,
         'template': self
       }));
@@ -250,7 +249,7 @@ myEdu.util.tpl = function(o) {
   $(config.templateClass, this.node).each(function() {
     var name = $(this).attr('name');
     if (!self.manager.hasTemplate(name)) {
-      var tpl = new myEdu.util.tpl({
+      var tpl = new jTpl.tpl({
         'node': this,
         'manager': self.manager,
         'config': self._config
@@ -267,7 +266,7 @@ myEdu.util.tpl = function(o) {
   return this;
 };
 
-myEdu.util.tpl.prototype = {
+jTpl.tpl.prototype = {
   
   /**
    * Clones a DOM tree and scrubs it of values.  Looks at children of passed in
@@ -669,7 +668,7 @@ myEdu.util.tpl.prototype = {
  *                  template: Template which contains var         REQUIRED
  * @return Obj - tplVariable instance (this).
  **/
-myEdu.util.tplVariable = function(o) {
+jTpl.tplVariable = function(o) {
   this.node = o.node || {};
   this.template = o.template || {};
   var $node = $(this.node); // Cache jQuery obj for this.node locally
@@ -688,7 +687,7 @@ myEdu.util.tplVariable = function(o) {
   return this;
 };
 
-myEdu.util.tplVariable.prototype = {
+jTpl.tplVariable.prototype = {
   
   /** 
    * Mirrors the jquery attr() method but also sets object properties.
