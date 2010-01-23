@@ -9,9 +9,12 @@
     
     <script>
       $(document).ready(function() {
+        // Instantiate the template manager
         var template = new myEdu.util.tplManager();
         
+        // On comment form submit
         $('#submit').click(function() {
+          
           // Just grab the info from the form
           var title = $('#title').val();
           var comment = $('#comment').val();
@@ -21,7 +24,9 @@
           var website, user_image;
           
           // If they passed both link text and an href then create the 
-          // data structure for a link template
+          // data structure for a link variable in the website template.  
+          // Otherwise set website to null.  A null value for the sub-template 
+          // will result in it not being displayed.  
           if (link && href) { 
             website = { 'link': { 'href': href, 'value': link } };
           }
@@ -30,7 +35,8 @@
           }
           
           // If they passed an image src then create the structure for the 
-          // image template
+          // image template.  See comment for the 'website' variable above 
+          // regarding setting the variable to null.
           if (image) {
             user_image = { 'image': { 'src': image } };
           }
@@ -39,23 +45,45 @@
           }
           
           // Create a new comment.  If website or user_image are null it won't
-          // append those templates.
+          // append those templates.  'title' and 'comment' are template 
+          // variables.  'website' and 'user_image' are sub-templates.  If 
+          // either of the latter are null it won't display that sub-template.
           var newComment = template.getNew('comment', {
               'title': title, 
               'comment': comment, 
               'website': website, 
-              'user_image': user_image,
+              'user_image': user_image, 
               'tplEvents': [
                 {
                   'selector': '.add-image-button',
                   'ev': 'click',
                   'fn': function() {
+                    
+                    // We're adding a subtemplate to an instantiated template.
+                    // More specifically, adding a 'user_image' template to the 
+                    // parent 'comment' template.  
+                    
+                    // Figure out the parent template's id
                     var parent_id = $(this).parents('.tpl').attr('id');
-
+                    
+                    // Get the actual template object from the template manager
                     var parent = template.get(parent_id);
+                    
+                    // Get the val from the text box for the image src
                     var src = $('.additional-image', parent.node).val();
-
-                    parent.addTpl('user_image', {'image': {'src': src } });
+                    
+                    // Add a 'user_image' template to the parent 'comment' 
+                    // template with an image src set to the val from input box
+                    parent.addTpl('user_image', { 'image': { 'src': src } });
+                  }
+                },
+                {
+                  'selector': 'img',
+                  'ev': 'click',
+                  'fn': function() {
+                    $(this).slideUp(function() {
+                      $(this).slideDown();
+                    });
                   }
                 }
               ] 
@@ -68,7 +96,16 @@
     </script>
   </head>
   <body>
-    
+    <h1>myEdu Javascript templating proposal proof of concept</h1>
+    <p>
+      This is a little demo of the javascript templating prototype.  
+      Enter some values into the field's below. Click submit to add the 
+      "comment".  Features include adding sub-templates (via the form within 
+      each comment; as well as simple event binding.  
+    </p>
+    <p>
+      View source to see implementation.  
+    </p>   
     <div id="comments"></div>
     
     <form id="add-comment">
@@ -86,26 +123,36 @@
     
     http://mashable.com/wp-content/uploads/2008/01/stallman.png
     
-    <!-- Templates -->
+    <!--  Templates -->
+    <!--  These are the template nodes that the template manager looks for and 
+          registers.  In this case they're in a div with display:none, but they
+          could be random visible nodes on your page.  The manager will find them
+          and strip variable nodes of their values.   -->
     <div style="display: none">
+      <!-- comment template -->
       <div class="tpl comment" name="comment">
         Title: <span class="var" name="title"></span><br />
         Comment: <br />
         <span class="var" name="comment"></span>
         
+        <!-- website template -->
         <div class="tpl" name="website">
           Website: <a href='' class="var" name="link"></a>
         </div>
-        
+        <!-- /website template -->
+
+        <!-- user_image template -->
         <div class="tpl" name="user_image">
           <img src="" class="var user-image" name="image" />
         </div>
+        <!-- /user_image template -->
         
         <br />
         <h3>Add another image to this template</h3>
         <input type='text' name='additional-image' class='additional-image' />
         <input type="button" name="add-image" value="Submit" class='add-image-button' />
     </div>
+    <!-- /comment template -->
     <!-- End Templates -->
     
   </body>
