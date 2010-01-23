@@ -64,7 +64,6 @@ myEdu.util.tplManager.prototype = {
    * @param name - String name of template to get
    * @param vars - Object hash containing variable names and values.
    * @return Mixed - myEdu.util.tpl instance on success, Boolean false otherwise
-   *
    **/
   'getNew': function(name, vars) {
     var tpl;
@@ -123,7 +122,6 @@ myEdu.util.tplManager.prototype = {
    * @return bool - true on success, false otherwise 
    *
    * TODO: Check type of incoming template object before pushing it on stack
-   *
    **/
   'register': function(tpl) {
     if (tpl) {
@@ -137,7 +135,6 @@ myEdu.util.tplManager.prototype = {
    *
    * @param id - Id of the root node of the template's DOM nodes.
    * @return Mixed - template object on success, false if template not found
-   *
    **/
   'get': function(id) {
     var i = this.templates.length;
@@ -157,7 +154,6 @@ myEdu.util.tplManager.prototype = {
    *
    * @param name - Name of the template to look for
    * @return bool - true if the manager has that template, false if not
-   *
    **/
   'hasTemplate': function(name) {
     var i = this.templates.length;
@@ -771,8 +767,7 @@ myEdu.util.tplVariable.prototype = {
    *
    * @param val -  String: Sets variables value.  
    *               Object: Sets value and attributes
-   * @return Obj - tplVariable instance (this). 
-   *                      
+   * @return Obj - tplVariable instance (this).                     
    **/
    'set': function(val) {
      var self = this;
