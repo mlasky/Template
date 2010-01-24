@@ -110,8 +110,7 @@ jTpl.tplManager.prototype = {
     if (vars) {
       cleanTpl.set(vars);
     }
-    
-    return cleanTpl;
+    return $(cleanTpl.node);
   },
   
   /**
@@ -298,12 +297,6 @@ jTpl.tpl.prototype = {
       }
     }
     
-    // If this is the root node for the template then we'll set display:none
-    // so the user can show the template at their leisure
-    if (node === this.node) {
-      sNode.css({'display': 'none'});
-    }
-    
     // If it already has an ID give it a new one so we don't have a duplicate
     // id in the DOM
     if (sNode.attr('id')) {
@@ -322,17 +315,22 @@ jTpl.tpl.prototype = {
     
     // Look at the children of the current node and call scrubbed recursively 
     // on each.  Then append them to the current scrubbed node
-    $.each(node.childNodes, function() {
+    var child;
+    var cNodes = node.childNodes;
+    var cLen = cNodes.length;
+    
+    for (i=0; i < cLen; i++) {
+      child = cNodes[i];
       // Check if this is a text node, if so just append it
-      if (this.nodeName === '#text') {
-        $(this).clone().appendTo(sNode);
+      if (child.nodeName === '#text') {
+        $(child).clone().appendTo(sNode);
       }
       else {
         // If it's not a text node then call scrubbed on it, then append it
-        cNode = self.scrubbed(this);
+        cNode = self.scrubbed(child);
         cNode.appendTo(sNode);
       }
-    });
+    };
     
     // Return a scrubbed DOM tree
     return sNode;
@@ -382,208 +380,9 @@ jTpl.tpl.prototype = {
     
     // Create a new template instance and append it after.
     var newTpl = this.manager.getNew(tpl, vars);
-    sub_template.after(newTpl.show().node);
+    sub_template.after(newTpl.show());
     
     return this;
-  },
-
-  /**
-   * Wraps jQuery append but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @param content: Content to append. 
-   * @return Obj - Template instance (this)
-   **/
-  'append': function(content) {
-    $(this.node).append(content);
-    return this;
-  },
-
-  /**
-   * Wraps jQuery appendTo but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @param node: DOM Node, jQuery object, or selector. 
-   * @return Obj - Template instance (this)
-   **/
-  'appendTo': function(node) {
-   $(this.node).appendTo(node);
-   return this;
-  },
-
-  /**
-   * Wraps jQuery prepend but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @param content: Content to prepend. 
-   * @return Obj - Template instance (this)
-   **/
-  'prepend': function(content) {
-    $(this.node).prepend(content);
-    return this;
-  },
-  
-  /**
-   * Wraps jQuery after but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @param content: Content to insert after. 
-   * @return Obj - Template instance (this)
-   **/
-  'after': function(content) {
-    $(this.node).after(content);
-    return this;
-  },
-   
-  /**
-   * Wraps jQuery before but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @param content: Content to insert before. 
-   * @return Obj - Template instance (this)
-   **/
-  'before': function(content) {
-   $(this.node).before(content);
-   return this;
-  },
-   
-  /**
-   * Wraps jQuery insertAfter but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @param node: DOM Node, jQuery object, or selector. 
-   * @return Obj - Template instance (this)
-   **/
-  'insertAfter': function(node) {
-    $(this.node).insertAfter(node);
-    return this;
-  },
-   
-  /**
-   * Wraps jQuery insertBefore but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @param node: DOM Node, jQuery object, or selector. 
-   * @return Obj - Template instance (this)
-   **/
-  'insertBefore': function(node) {
-    $(this.node).insertBefore(node);
-    return this;
-  },
-      
-  /**
-   * Wraps jQuery prependTo but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @param node: DOM Node, jQuery object, or selector. 
-   * @return Obj - Template instance (this)
-   **/
-  'prependTo': function(node) {
-    $(this.node).prependTo(node);
-    return this;
-  },
-     
-  /**
-   * Wraps jQuery show but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @return Obj - Template instance (this)
-   **/
-  'show': function() {
-    $(this.node).show();
-    return this;
-  },
-  
-  /**
-   * Wraps jQuery hide but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @return Obj - Template instance (this)
-   **/
-  'hide': function() {
-    $(this.node).hide();
-    return this;
-  },
-  
-  
-  /**
-   * Wraps jQuery fadeIn but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @param a: param for jQuery::fadeIn() timing ('fast', 1400, etc) 
-   * @param b: function to run after fadeIn
-   * @return Obj - Template instance (this)
-   **/
-  'fadeIn': function(a,b) {
-   $(this.node).fadeIn(a, b);
-   return this;
-  },
-  
-  /**
-   * Wraps jQuery fadeOut but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @param a: param for jQuery::fadeOut() timing ('fast', 1400, etc) 
-   * @param b: function to run after fadeOut
-   * @return Obj - Template instance (this)
-   **/
-  'fadeOut': function(a,b) {
-    $(this.node).fadeOut(a, b);
-    return this;
-  },
-  
-  /**
-   * Wraps jQuery slideUp but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @param a: param for jQuery::slideUp() timing ('fast', 1400, etc) 
-   * @param b: function to run after slideUp
-   * @return Obj - Template instance (this)
-   **/
-  'slideUp': function(a,b) {
-    $(this.node).slideUp(a, b);
-    return this;
-  },
-  
-  /**
-   * Wraps jQuery slideDown but works on this.node.
-   * 
-   * TODO: Wrap other jquery manipulation methods or rethink if the template
-   * objects need to be special or can they just be jQuery objects
-   *
-   * @param a: param for jQuery::slideDown() timing ('fast', 1400, etc) 
-   * @param b: function to run after slideDown
-   * @return Obj - Template instance (this)
-   **/
-  'slideDown': function(a,b) {
-   $(this.node).slideDown(a, b);
-   return this;
   },
   
   /**
@@ -627,35 +426,37 @@ jTpl.tpl.prototype = {
    * @return Obj - tpl instance (this).
    **/
   'set': function(vars) {
-    var vbl;
+    var vbl, cVar;
     var self = this;
     
     // Each var
-    $.each(vars, function(i) {
+    for (i in vars) {
+      cVar = vars[i];
+      
       var j = self.vars.length; // Len of current template var array
       
       if (i === 'tplEvents') {
-        self._applyEvents(this);
+        self._applyEvents(cVar);
       }
       
       // Look at each template var to see if it matches the current (i)
       while (j--) {
         vbl = self.vars[j];
         if (vbl._name === i) {
-          vbl.set(this); // Set the data
+          vbl.set(cVar); // Set the data
         }
       }
      
      // If "this" is an object (but not the DOMWindow) and we have a template
      // corresponding to it's key value (i) then apply the values to the sub-
      // template and show it. 
-      if (this.toString() !== '[object DOMWindow]' && 
+      if (cVar && cVar.toString() !== '[object DOMWindow]' && 
           typeof self._subTemplates[i] !== 'undefined') 
       {
-        self._subTemplates[i].set(this).show();
+        this.manager.get(self._subTemplates[i].attr('id')).set(cVar).show();
       }
-    });
-    return this;
+    };
+    return $(this.node);
   }
 };
 
@@ -673,9 +474,25 @@ jTpl.tplVariable = function(o) {
   this.template = o.template || {};
   var $node = $(this.node); // Cache jQuery obj for this.node locally
 
+  // Attribute types (href, class, src, etc)
+  var attrTypes = this.template.manager.attrTypes;
+  var i = attrTypes.length;
+   
+  // Local variables for current type and node value
+  var type, val; 
+  
   // Look through the attributes we care about and set them as object 
   // properties
-  this._setAttrs(); 
+  while (i--) {
+    type = attrTypes[i];
+    val = $node.attr(type); // Current node value for that type
+    
+    // If the node has a value for this attribute type set the attribute 
+    // for the object
+    if (typeof val !== 'undefined') {
+      this.attr(type, val);
+    }
+  }
   
   // Check if this node already has an ID.  If not generate a unique one and 
   // set it
@@ -683,7 +500,6 @@ jTpl.tplVariable = function(o) {
     this._id = this.template.manager._generateId();
     $node.attr('id', this._id);
   }
-  
   return this;
 };
 
@@ -709,38 +525,6 @@ jTpl.tplVariable.prototype = {
     return this[property_attr];
   },
   
-  /**
-   * This function should be removed, it's used for some ugly setup but could 
-   * be deprecated soon and functionality handled better.
-   * 
-   * Loops through the attribute types from the manager and checks to see 
-   * if the this.node has that attribute.  If so it sends it through this.attr
-   * to set the property val.
-   *
-   * @return Obj - tplVariable instance (this). 
-   **/
-  '_setAttrs': function() {
-    
-    // Attribute types (href, class, src, etc)
-    var attrTypes = this.template.manager.attrTypes;
-    var i = attrTypes.length;
-     
-    // Local variables for current type and node value
-    var type, val; 
-    
-    // Loop through the attribute types
-    while (i--) {
-      type = attrTypes[i];
-      val = $(this.node).attr(type); // Current node value for that type
-      
-      // If the node has a value for this attribute type set the attribute 
-      // for the object
-      if (typeof val !== 'undefined') {
-        this.attr(type, val);
-      }
-    }
-    return this;
-  },
 
   /**
    * Gets and sets vals for variable nodes.
